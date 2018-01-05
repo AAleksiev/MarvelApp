@@ -1,11 +1,14 @@
 package android.aleks.com.marvelapp;
 
 import android.accounts.NetworkErrorException;
+import android.aleks.com.marvelapp.mock.MockComicDetailsPresenter;
 import android.aleks.com.marvelapp.mock.MockMarvelComicsPresenter;
+import android.aleks.com.marvelapp.models.ComicDetailsViewModel;
 import android.aleks.com.marvelapp.models.ComicItemViewModel;
 import android.aleks.com.marvelapp.rest.MarvelService;
 import android.aleks.com.marvelapp.rest.auth.RequestAuthProvider;
 import android.aleks.com.marvelapp.ui.comics.MarvelComicsView;
+import android.aleks.com.marvelapp.ui.details.ComicDetailsView;
 import android.support.v7.util.DiffUtil;
 
 import org.junit.Before;
@@ -24,16 +27,16 @@ import io.reactivex.Single;
  * Created by Aleksandar on 5.1.2018 г..
  */
 
-public class MarvelComicPresenterTest extends BaseTest {
+public class ComicDetailsPresenterTest extends BaseTest {
 
     @Mock
     MarvelService marvelService;
     @Mock
     RequestAuthProvider requestAuthProvider;
     @Mock
-    MarvelComicsView marvelComicsView;
+    ComicDetailsView comicDetailsView;
     @InjectMocks
-    protected MockMarvelComicsPresenter marvelComicsPresenter;
+    protected MockComicDetailsPresenter mockComicDetailsPresenter;
 
     @Before
     public void setup() {
@@ -44,16 +47,17 @@ public class MarvelComicPresenterTest extends BaseTest {
             @Override
             public Object answer( InvocationOnMock invocation ) throws Throwable {
 
-                marvelComicsPresenter.onAttach( marvelComicsView );
+                mockComicDetailsPresenter.onAttach( comicDetailsView );
+                mockComicDetailsPresenter.loadComicDetails( 1 );
                 return 1;
             }
-        } ).when( marvelComicsView ).viewAttached();
+        } ).when( comicDetailsView ).viewAttached();
     }
 
     @Test
     public void comicsShouldBeLoadedIntoView() {
 
-        final InOrder inOrder = Mockito.inOrder( marvelComicsView );
+        final InOrder inOrder = Mockito.inOrder( comicDetailsView );
 
         Mockito.doAnswer( new Answer() {
             @Override
@@ -61,18 +65,18 @@ public class MarvelComicPresenterTest extends BaseTest {
 
                 return Single.just( comicDataWrapper );
             }
-        } ).when( marvelService ).getComics( Mockito.anyInt(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString() );
+        } ).when( marvelService ).getComicDetails( Mockito.anyInt(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString() );
 
-        marvelComicsView.viewAttached();
-        inOrder.verify( marvelComicsView, Mockito.times( 1 ) ).showLoading();
-        inOrder.verify( marvelComicsView, Mockito.times( 1 ) ).hideLoading();
-        inOrder.verify( marvelComicsView, Mockito.times( 1 ) ).onComicsLoaded( Mockito.<ComicItemViewModel>anyList(), Mockito.any( DiffUtil.DiffResult.class ) );
+        comicDetailsView.viewAttached();
+        inOrder.verify( comicDetailsView, Mockito.times( 1 ) ).showLoading();
+        inOrder.verify( comicDetailsView, Mockito.times( 1 ) ).hideLoading();
+        inOrder.verify( comicDetailsView, Mockito.times( 1 ) ).onComicLoaded( Mockito.nullable( ComicDetailsViewModel.class ) );
     }
 
     @Test
     public void comicsShouldNotBeLoadedIntoView() {
 
-        final InOrder inOrder = Mockito.inOrder( marvelComicsView );
+        final InOrder inOrder = Mockito.inOrder( comicDetailsView );
 
         Mockito.doAnswer( new Answer() {
             @Override
@@ -80,11 +84,11 @@ public class MarvelComicPresenterTest extends BaseTest {
 
                 return Single.error( new NetworkErrorException() );
             }
-        } ).when( marvelService ).getComics( Mockito.anyInt(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString() );
+        } ).when( marvelService ).getComicDetails( Mockito.anyInt(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString() );
 
-        marvelComicsView.viewAttached();
-        inOrder.verify( marvelComicsView, Mockito.times( 1 ) ).showLoading();
-        inOrder.verify( marvelComicsView, Mockito.times( 1 ) ).hideLoading();
-        inOrder.verify( marvelComicsView, Mockito.times( 1 ) ).onError( Mockito.nullable( String.class ) );
+        comicDetailsView.viewAttached();
+        inOrder.verify( comicDetailsView, Mockito.times( 1 ) ).showLoading();
+        inOrder.verify( comicDetailsView, Mockito.times( 1 ) ).hideLoading();
+        inOrder.verify( comicDetailsView, Mockito.times( 1 ) ).onError( Mockito.nullable( String.class ) );
     }
 }

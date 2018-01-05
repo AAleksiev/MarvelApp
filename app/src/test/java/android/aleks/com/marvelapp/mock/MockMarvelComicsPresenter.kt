@@ -1,4 +1,4 @@
-package android.aleks.com.marvelapp
+package android.aleks.com.marvelapp.mock
 
 import android.aleks.com.marvelapp.models.ComicItemViewModel
 import android.aleks.com.marvelapp.rest.MarvelService

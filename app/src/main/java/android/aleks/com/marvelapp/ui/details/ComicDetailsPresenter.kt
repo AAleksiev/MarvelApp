@@ -14,7 +14,7 @@ import javax.inject.Inject
 /**
  * Created by Aleksandar on 5.1.2018 г..
  */
-class ComicDetailsPresenter @Inject constructor(private val marvelService: MarvelService, private val authProvider: RequestAuthProvider) : BasePresenter<ComicDetailsView> {
+open class ComicDetailsPresenter @Inject constructor(private val marvelService: MarvelService, private val authProvider: RequestAuthProvider) : BasePresenter<ComicDetailsView> {
 
     //region properties
     private var view: ComicDetailsView? = null

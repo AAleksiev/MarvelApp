@@ -2,14 +2,10 @@ package android.aleks.com.marvelapp;
 
 import android.accounts.NetworkErrorException;
 import android.aleks.com.marvelapp.mock.MockComicDetailsPresenter;
-import android.aleks.com.marvelapp.mock.MockMarvelComicsPresenter;
 import android.aleks.com.marvelapp.models.ComicDetailsViewModel;
-import android.aleks.com.marvelapp.models.ComicItemViewModel;
 import android.aleks.com.marvelapp.rest.MarvelService;
 import android.aleks.com.marvelapp.rest.auth.RequestAuthProvider;
-import android.aleks.com.marvelapp.ui.comics.MarvelComicsView;
 import android.aleks.com.marvelapp.ui.details.ComicDetailsView;
-import android.support.v7.util.DiffUtil;
 
 import org.junit.Before;
 import org.junit.Test;

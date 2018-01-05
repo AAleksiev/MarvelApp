@@ -1,19 +1,16 @@
 package android.aleks.com.marvelapp.ui.comics
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-
 import android.aleks.com.marvelapp.R
 import android.aleks.com.marvelapp.models.ComicItemViewModel
 import android.aleks.com.marvelapp.ui.base.BaseFragment
-import android.aleks.com.marvelapp.ui.main.MainPresenter
 import android.aleks.com.marvelapp.utils.RecyclerViewItemsSpaceDecoration
-import android.support.v7.app.AppCompatActivity
+import android.os.Bundle
 import android.support.v7.util.DiffUtil
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ProgressBar
 import javax.inject.Inject
 

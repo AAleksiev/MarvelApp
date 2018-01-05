@@ -10,5 +10,5 @@ import android.support.v7.util.DiffUtil
 interface MarvelComicsView : BaseView {
 
     val viewItems: List<ComicItemViewModel>
-    fun onComicsLoaded(pair: Pair<List<ComicItemViewModel>, DiffUtil.DiffResult?>)
+    fun onComicsLoaded(comics: List<ComicItemViewModel>, diffResult: DiffUtil.DiffResult?)
 }

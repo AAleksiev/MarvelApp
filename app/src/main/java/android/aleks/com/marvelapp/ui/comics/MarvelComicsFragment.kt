@@ -116,11 +116,11 @@ class MarvelComicsFragment : BaseFragment(), MarvelComicsView {
 
     }
 
-    override fun onComicsLoaded(pair: Pair<List<ComicItemViewModel>, DiffUtil.DiffResult?>) {
+    override fun onComicsLoaded(comics: List<ComicItemViewModel>, diffResult: DiffUtil.DiffResult?) {
 
         marvelComicsAdapter.adapterItems.clear()
-        marvelComicsAdapter.adapterItems.addAll(pair.first)
-        pair.second?.dispatchUpdatesTo(marvelComicsAdapter)
+        marvelComicsAdapter.adapterItems.addAll(comics)
+        diffResult?.dispatchUpdatesTo(marvelComicsAdapter)
     }
     //endregion
 

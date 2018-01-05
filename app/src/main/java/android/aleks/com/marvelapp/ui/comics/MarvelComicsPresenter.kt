@@ -15,10 +15,10 @@ import javax.inject.Inject
 /**
  * Created by Aleksandar on 5.1.2018 г..
  */
-class MarvelComicsPresenter @Inject constructor(private val marvelService: MarvelService, private val authProvider: RequestAuthProvider) : BasePresenter<MarvelComicsView> {
+open class MarvelComicsPresenter @Inject constructor(private val marvelService: MarvelService, private val authProvider: RequestAuthProvider) : BasePresenter<MarvelComicsView> {
 
     //region properties
-    private var view: MarvelComicsView? = null
+    protected var view: MarvelComicsView? = null
     private var compositeDisposable: CompositeDisposable? = null
     //endregion
 
@@ -39,12 +39,28 @@ class MarvelComicsPresenter @Inject constructor(private val marvelService: Marve
     //endregion
 
     //load comics
-    protected fun getComics(): Flowable<List<ComicItemViewModel>> {
+    protected open fun setSchedulers(flowable: Flowable<Pair<List<ComicItemViewModel>, DiffUtil.DiffResult?>>): Flowable<Pair<List<ComicItemViewModel>, DiffUtil.DiffResult?>> {
+
+        return flowable
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+    }
+
+    private fun getComics(): Flowable<Pair<List<ComicItemViewModel>, DiffUtil.DiffResult?>> {
+
+        val initialPair: Pair<List<ComicItemViewModel>, DiffUtil.DiffResult?> = (view?.viewItems ?: listOf()) to null
 
         return authProvider.calculateAth()
                 .flatMap { mapper -> marvelService.getComics(100, mapper.ts, mapper.hash) }
                 .map { map -> map.data?.results?.map { comic -> ComicItemViewModel(comic.id, comic.title, comic.thumbnail?.path) } ?: listOf() }
                 .toFlowable()
+                .scan(initialPair, { listDiffResultPair, currentForecastViewModel ->
+
+                    val callback = DiffUtilCallback(listDiffResultPair.first, currentForecastViewModel)
+                    val result = DiffUtil.calculateDiff(callback)
+                    currentForecastViewModel to result
+                })
+                .filter { filter -> filter.second != null }
     }
 
     private fun loadComics() {
@@ -53,21 +69,11 @@ class MarvelComicsPresenter @Inject constructor(private val marvelService: Marve
 
             view?.showLoading()
 
-            val initialPair: Pair<List<ComicItemViewModel>, DiffUtil.DiffResult?> = (view?.viewItems ?: listOf()) to null
-
-            val disposable = getComics()
-                    .subscribeOn(Schedulers.io())
-                    .scan(initialPair, { listDiffResultPair, currentForecastViewModel ->
-                        val callback = DiffUtilCallback(listDiffResultPair.first, currentForecastViewModel)
-                        val result = DiffUtil.calculateDiff(callback)
-                        currentForecastViewModel to result
-                    })
-                    .filter { filter -> filter.second != null }
-                    .observeOn(AndroidSchedulers.mainThread())
+            val disposable = setSchedulers(getComics())
                     .subscribe({ success ->
 
                         view?.hideLoading()
-                        view?.onComicsLoaded(success)
+                        view?.onComicsLoaded(success.first, success.second)
                     }, { error ->
 
                         view?.hideLoading()

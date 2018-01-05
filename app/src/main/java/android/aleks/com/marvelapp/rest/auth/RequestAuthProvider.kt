@@ -9,7 +9,7 @@ import java.util.*
 /**
  * Created by Aleksandar on 5.1.2018 г..
  */
-class RequestAuthProvider {
+open class RequestAuthProvider {
 
     fun calculateAth(): Single<AuthModel> {
 

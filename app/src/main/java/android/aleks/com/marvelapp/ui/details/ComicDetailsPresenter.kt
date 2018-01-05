@@ -5,6 +5,7 @@ import android.aleks.com.marvelapp.models.ComicDetailsViewModel
 import android.aleks.com.marvelapp.mvp.BasePresenter
 import android.aleks.com.marvelapp.rest.MarvelService
 import android.aleks.com.marvelapp.rest.auth.RequestAuthProvider
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -35,15 +36,25 @@ class ComicDetailsPresenter @Inject constructor(private val marvelService: Marve
     //endregion
 
     //region load comic details
+    protected open fun setSchedulers(single: Single<List<ComicDetailsViewModel>>): Single<List<ComicDetailsViewModel>> {
+
+        return single
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+    }
+
+    private fun requestComicDetails(comicId: Int?): Single<List<ComicDetailsViewModel>> {
+
+        return authProvider.calculateAth()
+                .flatMap { mapper -> marvelService.getComicDetails(comicId, mapper.ts, mapper.hash) }
+                .map { map -> map.data?.results?.map { comic -> ComicDetailsViewModel(comic.id, comic.title, comic.thumbnail?.path, comic.description, comic.creators?.items?.map { m -> AuthorViewModel(m?.name, m?.role) }) } ?: listOf() }
+    }
+
     fun loadComicDetails(comicId: Int?) {
 
         view?.showLoading()
 
-        authProvider.calculateAth()
-                .subscribeOn(Schedulers.io())
-                .flatMap { mapper -> marvelService.getComicDetails(comicId, mapper.ts, mapper.hash) }
-                .map { map -> map.data?.results?.map { comic -> ComicDetailsViewModel(comic.id, comic.title, comic.thumbnail?.path, comic.description, comic.creators?.items?.map { m -> AuthorViewModel(m?.name, m?.role) }) } ?: listOf() }
-                .observeOn(AndroidSchedulers.mainThread())
+        disposable = setSchedulers(requestComicDetails(comicId))
                 .subscribe({ success ->
 
                     view?.hideLoading()

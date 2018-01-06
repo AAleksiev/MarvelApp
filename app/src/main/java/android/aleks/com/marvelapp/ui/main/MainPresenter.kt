@@ -1,11 +1,11 @@
 package android.aleks.com.marvelapp.ui.main
 
-import android.aleks.com.marvelapp.mvp.BasePresenter
+import android.aleks.com.marvelapp.di.ActivityScope
 
 /**
  * Created by Aleksandar on 5.1.2018 г..
  */
-class MainPresenter  : BasePresenter<MainView> {
+class MainPresenter : MainBasePresenter {
 
     //region properties
     private var view: MainView? = null
@@ -22,7 +22,12 @@ class MainPresenter  : BasePresenter<MainView> {
     //endregion
 
     //region get comic details
-    fun getComicDetails(comicId: Int) {
+    override fun getComics() {
+
+        view?.showComics()
+    }
+
+    override fun getComicDetails(comicId: Int) {
 
         view?.showComicDetails(comicId)
     }

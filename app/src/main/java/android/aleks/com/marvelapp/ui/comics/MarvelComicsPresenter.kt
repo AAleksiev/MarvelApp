@@ -6,27 +6,30 @@ import android.aleks.com.marvelapp.rest.MarvelService
 import android.aleks.com.marvelapp.rest.auth.RequestAuthProvider
 import android.aleks.com.marvelapp.utils.DiffUtilCallback
 import android.support.v7.util.DiffUtil
+import example.aleks.com.postapp.schedulers.SchedulersProvider
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
 /**
  * Created by Aleksandar on 5.1.2018 г..
  */
-open class MarvelComicsPresenter @Inject constructor(private val marvelService: MarvelService, private val authProvider: RequestAuthProvider) : BasePresenter<MarvelComicsView> {
+open class MarvelComicsPresenter @Inject constructor(private val marvelService: MarvelService,
+                                                     private val authProvider: RequestAuthProvider,
+                                                     private val schedulersProvider: SchedulersProvider) : MarvelComicsBasePresenter {
 
     //region properties
     protected var view: MarvelComicsView? = null
-    private var compositeDisposable: CompositeDisposable? = null
+    private var disposable: Disposable? = null
     //endregion
 
     //region BasePresenter implementation
     override fun onAttach(baseView: MarvelComicsView) {
 
         dispose()
-        compositeDisposable = CompositeDisposable()
         view = baseView
         loadComics()
     }
@@ -36,16 +39,30 @@ open class MarvelComicsPresenter @Inject constructor(private val marvelService: 
         dispose()
         view = null
     }
+
+    override fun loadComics() {
+
+        if (view?.viewItems?.isEmpty() == true) {
+
+            view?.showLoading()
+
+            disposable = getComics()
+                    .subscribeOn(schedulersProvider.ioScheduler())
+                    .observeOn(schedulersProvider.mainScheduler())
+                    .subscribe({ success ->
+
+                        view?.hideLoading()
+                        view?.onComicsLoaded(success.first, success.second)
+                    }, { error ->
+
+                        view?.hideLoading()
+                        view?.onError(error.message)
+                    })
+        }
+    }
     //endregion
 
     //load comics
-    protected open fun setSchedulers(flowable: Flowable<Pair<List<ComicItemViewModel>, DiffUtil.DiffResult?>>): Flowable<Pair<List<ComicItemViewModel>, DiffUtil.DiffResult?>> {
-
-        return flowable
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-    }
-
     private fun getComics(): Flowable<Pair<List<ComicItemViewModel>, DiffUtil.DiffResult?>> {
 
         val initialPair: Pair<List<ComicItemViewModel>, DiffUtil.DiffResult?> = (view?.viewItems ?: listOf()) to null
@@ -62,36 +79,15 @@ open class MarvelComicsPresenter @Inject constructor(private val marvelService: 
                 })
                 .filter { filter -> filter.second != null }
     }
-
-    private fun loadComics() {
-
-        if (view?.viewItems?.isEmpty() == true) {
-
-            view?.showLoading()
-
-            val disposable = setSchedulers(getComics())
-                    .subscribe({ success ->
-
-                        view?.hideLoading()
-                        view?.onComicsLoaded(success.first, success.second)
-                    }, { error ->
-
-                        view?.hideLoading()
-                        view?.onError(error.message)
-                    })
-
-            compositeDisposable?.add(disposable)
-        }
-    }
     //endregion
 
     //region dispose
     private fun dispose() {
 
-        if (compositeDisposable?.isDisposed == false) {
+        if (disposable?.isDisposed == false) {
 
-            compositeDisposable?.dispose()
-            compositeDisposable = null
+            disposable?.dispose()
+            disposable = null
         }
     }
     //endregion

@@ -12,6 +12,8 @@ import org.junit.BeforeClass;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.schedulers.TestScheduler;
+
 /**
  * Created by Aleksandar on 5.1.2018 г..
  */

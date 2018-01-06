@@ -11,7 +11,7 @@ class MainActivity : BaseActivity(), MainView {
 
     //region properties
     @Inject
-    lateinit var presenter: MainPresenter
+    lateinit var presenter: MainBasePresenter
     //endregion
 
     //region activity methods
@@ -24,7 +24,7 @@ class MainActivity : BaseActivity(), MainView {
 
         if (savedInstanceState == null) {
 
-            showComics()
+            presenter.getComics()
         }
     }
 

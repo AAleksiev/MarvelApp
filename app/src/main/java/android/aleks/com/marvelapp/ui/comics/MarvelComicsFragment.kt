@@ -18,7 +18,7 @@ class MarvelComicsFragment : BaseFragment(), MarvelComicsView {
 
     //region properties
     @Inject
-    lateinit var marvelComicsPresenter: MarvelComicsPresenter
+    lateinit var marvelComicsPresenter: MarvelComicsBasePresenter
 
     @Inject
     lateinit var marvelComicsAdapter: MarvelComicsAdapter

@@ -1,10 +1,10 @@
 package android.aleks.com.marvelapp;
 
 import android.accounts.NetworkErrorException;
-import android.aleks.com.marvelapp.mock.MockComicDetailsPresenter;
 import android.aleks.com.marvelapp.models.ComicDetailsViewModel;
 import android.aleks.com.marvelapp.rest.MarvelService;
 import android.aleks.com.marvelapp.rest.auth.RequestAuthProvider;
+import android.aleks.com.marvelapp.ui.details.ComicDetailsPresenter;
 import android.aleks.com.marvelapp.ui.details.ComicDetailsView;
 
 import org.junit.Before;
@@ -17,7 +17,9 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import example.aleks.com.postapp.schedulers.SchedulersProvider;
 import io.reactivex.Single;
+import io.reactivex.schedulers.TestScheduler;
 
 /**
  * Created by Aleksandar on 5.1.2018 г..
@@ -30,14 +32,22 @@ public class ComicDetailsPresenterTest extends BaseTest {
     @Mock
     RequestAuthProvider requestAuthProvider;
     @Mock
+    SchedulersProvider testSchedulersProvider;
+    @Mock
     ComicDetailsView comicDetailsView;
     @InjectMocks
-    protected MockComicDetailsPresenter mockComicDetailsPresenter;
+    protected ComicDetailsPresenter mockComicDetailsPresenter;
+
+    private final TestScheduler testScheduler = new TestScheduler();
 
     @Before
     public void setup() {
 
         MockitoAnnotations.initMocks( this );
+
+        Mockito.doReturn(testScheduler).when(testSchedulersProvider).ioScheduler();
+        Mockito.doReturn(testScheduler).when(testSchedulersProvider).mainScheduler();
+        Mockito.doReturn(testScheduler).when(testSchedulersProvider).computationScheduler();
 
         Mockito.doAnswer( new Answer() {
             @Override
@@ -64,6 +74,7 @@ public class ComicDetailsPresenterTest extends BaseTest {
         } ).when( marvelService ).getComicDetails( Mockito.anyInt(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString() );
 
         comicDetailsView.viewAttached();
+        testScheduler.triggerActions();
         inOrder.verify( comicDetailsView, Mockito.times( 1 ) ).showLoading();
         inOrder.verify( comicDetailsView, Mockito.times( 1 ) ).hideLoading();
         inOrder.verify( comicDetailsView, Mockito.times( 1 ) ).onComicLoaded( Mockito.nullable( ComicDetailsViewModel.class ) );
@@ -83,6 +94,7 @@ public class ComicDetailsPresenterTest extends BaseTest {
         } ).when( marvelService ).getComicDetails( Mockito.anyInt(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString() );
 
         comicDetailsView.viewAttached();
+        testScheduler.triggerActions();
         inOrder.verify( comicDetailsView, Mockito.times( 1 ) ).showLoading();
         inOrder.verify( comicDetailsView, Mockito.times( 1 ) ).hideLoading();
         inOrder.verify( comicDetailsView, Mockito.times( 1 ) ).onError( Mockito.nullable( String.class ) );

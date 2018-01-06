@@ -21,7 +21,7 @@ class ComicDetailsFragment : BaseFragment(), ComicDetailsView {
 
     //region properties
     @Inject
-    lateinit var presenter: ComicDetailsPresenter
+    lateinit var presenter: ComicDetailsBasePresenter
 
     private var comicId: Int = 0
 

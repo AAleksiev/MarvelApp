@@ -5,6 +5,7 @@ import android.aleks.com.marvelapp.di.modules.ApplicationModule
 import android.aleks.com.marvelapp.di.modules.NetworkModule
 import android.aleks.com.marvelapp.rest.MarvelService
 import dagger.Component
+import example.aleks.com.postapp.schedulers.SchedulersProvider
 import javax.inject.Singleton
 
 /**
@@ -16,4 +17,5 @@ interface ApplicationComponent {
 
     fun inject(marvelApp: MarvelApp)
     fun marvelService(): MarvelService
+    fun schedulersProvider(): SchedulersProvider
 }

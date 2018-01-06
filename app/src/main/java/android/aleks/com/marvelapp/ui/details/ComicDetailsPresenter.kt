@@ -5,6 +5,7 @@ import android.aleks.com.marvelapp.models.ComicDetailsViewModel
 import android.aleks.com.marvelapp.mvp.BasePresenter
 import android.aleks.com.marvelapp.rest.MarvelService
 import android.aleks.com.marvelapp.rest.auth.RequestAuthProvider
+import example.aleks.com.postapp.schedulers.SchedulersProvider
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -14,7 +15,9 @@ import javax.inject.Inject
 /**
  * Created by Aleksandar on 5.1.2018 г..
  */
-open class ComicDetailsPresenter @Inject constructor(private val marvelService: MarvelService, private val authProvider: RequestAuthProvider) : BasePresenter<ComicDetailsView> {
+open class ComicDetailsPresenter @Inject constructor(private val marvelService: MarvelService,
+                                                     private val authProvider: RequestAuthProvider,
+                                                     private val schedulersProvider: SchedulersProvider) : ComicDetailsBasePresenter {
 
     //region properties
     private var view: ComicDetailsView? = null
@@ -33,28 +36,14 @@ open class ComicDetailsPresenter @Inject constructor(private val marvelService: 
         dispose()
         view = null
     }
-    //endregion
 
-    //region load comic details
-    protected open fun setSchedulers(single: Single<List<ComicDetailsViewModel>>): Single<List<ComicDetailsViewModel>> {
-
-        return single
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-    }
-
-    private fun requestComicDetails(comicId: Int?): Single<List<ComicDetailsViewModel>> {
-
-        return authProvider.calculateAth()
-                .flatMap { mapper -> marvelService.getComicDetails(comicId, mapper.ts, mapper.hash) }
-                .map { map -> map.data?.results?.map { comic -> ComicDetailsViewModel(comic.id, comic.title, comic.thumbnail?.path, comic.description, comic.creators?.items?.map { m -> AuthorViewModel(m?.name, m?.role) }) } ?: listOf() }
-    }
-
-    fun loadComicDetails(comicId: Int?) {
+    override fun loadComicDetails(comicId: Int?) {
 
         view?.showLoading()
 
-        disposable = setSchedulers(requestComicDetails(comicId))
+        disposable = requestComicDetails(comicId)
+                .subscribeOn(schedulersProvider.ioScheduler())
+                .observeOn(schedulersProvider.mainScheduler())
                 .subscribe({ success ->
 
                     view?.hideLoading()
@@ -67,8 +56,17 @@ open class ComicDetailsPresenter @Inject constructor(private val marvelService: 
     }
     //endregion
 
+    //region load comic details
+    private fun requestComicDetails(comicId: Int?): Single<List<ComicDetailsViewModel>> {
+
+        return authProvider.calculateAth()
+                .flatMap { mapper -> marvelService.getComicDetails(comicId, mapper.ts, mapper.hash) }
+                .map { map -> map.data?.results?.map { comic -> ComicDetailsViewModel(comic.id, comic.title, comic.thumbnail?.path, comic.description, comic.creators?.items?.map { m -> AuthorViewModel(m?.name, m?.role) }) } ?: listOf() }
+    }
+    //endregion
+
     //region dispose
-    fun dispose() {
+    private fun dispose() {
 
         if (disposable?.isDisposed == false) {
 

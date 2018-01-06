@@ -2,7 +2,9 @@ package android.aleks.com.marvelapp.ui.comics
 
 import android.aleks.com.marvelapp.R
 import android.aleks.com.marvelapp.models.ComicItemViewModel
+import android.aleks.com.marvelapp.ui.main.MainBasePresenter
 import android.aleks.com.marvelapp.ui.main.MainPresenter
+import android.aleks.com.marvelapp.ui.main.MainView
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -16,7 +18,7 @@ import javax.inject.Inject
 /**
  * Created by Aleksandar on 5.1.2018 г..
  */
-class MarvelComicsAdapter @Inject constructor(private val presenter: MainPresenter) : RecyclerView.Adapter<MarvelComicsAdapter.ComicViewHolder>() {
+class MarvelComicsAdapter @Inject constructor(private val presenter: MainBasePresenter) : RecyclerView.Adapter<MarvelComicsAdapter.ComicViewHolder>() {
 
     //region properties
     val adapterItems: MutableList<ComicItemViewModel> = mutableListOf()
